@@ -16,22 +16,10 @@
       :urls ="['home', 'restricciones']"
       :settingFlag="true"
     />
-
-    <!-- <div class="h-[25px] w-[60px]">
-      <FlagSelect v-model="valor_defecto" @change="capturamos_veremos" disabled="true" />
-    </div> -->
-
     <br>
 
-
-
     <div class="flex flex-col">
-      <div class="flex justify-start"  v-if="!fullScreen" >
-
-
-
-
-
+      <div class="flex justify-start"  v-if="!fullScreen">
       <!-- <div @click="mverificamos"> hacer clicks para probar</div> -->
       <div class="flex justify-between space-x-4">
         <!-- Primer bloque - Indicador principal en Card -->
@@ -88,14 +76,6 @@
     <!-- Aquí puedes agregar los dos indicadores adicionales siguiendo el formato anterior -->
   </div>
 </div>
-
-
-
-
-
-
-
-
     </div>
 
       <br>
@@ -160,12 +140,11 @@
           <span class="badge absolute top-[-2] right-[-4] h-4 w-4 bg-red400-500 rounded-full text-white text-center text-tinysm min-w-[10px]" >{{countNotNoti}}</span>
         </button>
 
-<!--
+
         <button
-          disabled = "disabled"
           class="ml-1 bg-white w-[18%] sm:w-[25%] h-[30px] text-[0.6rem] hover:bg-gray-100 px-2 py-1 border border-orange rounded shadow text-orange relative"
           @mouseover="hoverEffect" @mouseleave="removeHoverEffect"
-          @click="openModal({ param: 'enviarNoti' })"
+          @click="openModal({ param: 'calendarDg' })"
           :disabled="disabledItemsEnviarCorreos"
           :class="{
                 'border-orange': !disabledItemsEnviarCorreos,
@@ -175,7 +154,7 @@
           >
           <i class="fas fa-calendar"></i> Calendario Sem.
           <span class="badge absolute top-[-2] right-[-4] h-5 w-5 bg-red400-500 rounded-full text-white text-center text-tinysm min-w-[10px] text-[0.7rem]" >New</span>
-        </button> -->
+        </button>
 
       </div>
       <div class=" flex  w-[50%] sm:w-full" v-if="fullScreen">
@@ -581,6 +560,10 @@
       @closeModal="closeModal"
       @confirmStatus="enviarNotificaciones"
     />
+    <CalendarDg
+      v-if="modalName === 'calendarDg' && countNotNoti > '0'"
+      @closeModal="closeModal"
+    />
   </div>
 </template>
 
@@ -597,14 +580,13 @@ import Breadcrumb from "../../components/Layout/Breadcrumb.vue";
 import AddFront from "../../components/AddFront.vue";
 import AddPhase from "../../components/AddPhase.vue";
 import DataTableRestricciones from "../../components/DataTableRestricciones.vue";
-// import DataTableRestriccionesRow from "../../components/DataTableRestriccionesRow.vue";
-// import RestrictionPerson from "../../components/RestrictionPerson.vue";
 
 import ToggleColumn from "../../components/ToggleColumn.vue";
 import AddRow from "../../components/AddRow.vue";
 import DeleteRow from "../../components/DeleteRow.vue";
 import UploadExcel from "../../components/UploadExcel.vue";
 import ConfirmBloq from "../../components/ConfirmBloq.vue";
+import CalendarDg from "../../components/CalendarDg.vue";
 // import DownloadReport from "../../components/DownloadReport.vue";
 import SelectOption from "../../components/SelectOption.vue";
 import DeleteFront from "../../components/DeleteFront.vue";
@@ -624,16 +606,12 @@ export default {
     AddFront,
     AddPhase,
     DataTableRestricciones,
-    // DataTableRestriccionesRow,
     AddRow,
     DeleteRow,
     DeleteFront,
     UploadExcel,
     ConfirmBloq,
-    // ScrollTableRow,
-    // RestrictionPerson,
-
-    // DownloadReport,
+    CalendarDg,
     SelectOption,
     ToggleColumn,
     AddRowData,
@@ -865,16 +843,9 @@ export default {
         Estado[h] = response.estados[h]['desEstado'];
       }
 
-      for (let j = 0; j < response.integrantesAnaReS.length; j ++){
-        // Responsable[j] = response.integrantesAnaReS[j]['desProyIntegrante'];
-        Responsable.push(response.integrantesAnaReS[j]['desProyIntegrante'])
+      for (let h = 0; h < response.integrantesAnaReS.length; h ++){
+        Responsable[h] = response.integrantesAnaReS[h]['desProyIntegrante'];
       }
-
-
-
-      // Responsable = ['diego@gmail.com', 'no@gmail.com', 'nadaaa@gmail.com']
-      // Responsable.push('gpino@inarco.com.pe', 'ejurado@inarco.com.pe', 'bloayza@inarco.com.pe', 'mcatalina@inarco.com.pe', 'jpucuhuayla@inarco.com.pe', 'eborda@inarco.com.pe', 'randrade@inarco.com.pe', 'ebeltran@inarco.com.pe', 'kaliaga@inarco.com.pe', 'ranton@inarco.com.pe', 'mclavijo@inarco.com.pe');
-      // console.log(Responsable)
 
       Solicitante.push(response.solicitanteActual);
       const data_array = [
@@ -894,8 +865,6 @@ export default {
 
       const workbook = new excelJs.Workbook();
       const ws = workbook.addWorksheet('Restricciones');
-
-
       ws.addRow(["Frente", "Fase", "Actividad", "Restriccion", "Tipo Restriccion", "Fecha Requerida", "Fecha Conciliada", "Responsable", "Estado", "Solicitante"]);
       ws.addRow(["", "", "", "", "", "", "", "", "", ""]);
 
@@ -1014,34 +983,6 @@ export default {
 
 
 
-      // 1. Crear una segunda hoja llamada "Valores"
-      const wsValores = workbook.addWorksheet('Valores');
-
-      // 2. Imprimir los valores de Responsable en la columna A de la segunda hoja
-      for(let i = 0; i < Responsable.length; i++) {
-          wsValores.getCell('A' + (i + 1)).value = Responsable[i];
-      }
-
-      // Hacer la hoja "Valores" oculta
-      wsValores.state = 'hidden';
-
-      // const responsablesColumnIndex = 26; // 26 corresponde a la columna Z en Excel
-
-      // for (let i = 0; i < Responsable.length; i++) {
-      //     ws.getCell(i + 1, responsablesColumnIndex).value = Responsable[i];
-      // }
-
-
-      // const startRow = 1; // Supongamos que comienzas en la fila 1
-      // const endRow = startRow + Responsable.length - 1; // Calcula la fila final basándote en la longitud de tu array
-      // const formula = `'\$Z\$${startRow}:\$Z\$${endRow}'`;
-
-      // ws.getColumn('Z').hidden = true;
-
-      // const responsablesColumnIndex = 26; // 26 corresponde a la columna Z
-      //     for (let i = 0; i < data_array[0].H.length; i++) {
-      //         ws.getCell(i + 1, responsablesColumnIndex).value = data_array[0].H[i];
-      //     }
 
       for(let i = 2; i < 100; i ++){
         const validationCell_Frente = ws.getCell('A'+`"${i}"`);
@@ -1068,17 +1009,13 @@ export default {
           formulae: [`"${data_array[0].E.join(',')}"`],
         };
 
-
-    //       // console.log(data_array[0].H)
-        const validationCell_Res = ws.getCell('H' + i);
+        const validationCell_Res = ws.getCell('H'+`"${i}"`);
         validationCell_Res.dataValidation = {
-            type: 'list',
-            // formulae: ['$Z$1:$Z$'+Responsable.length], //formula, // Usa la fórmula que construiste
-            formulae: ['Valores!$A$1:$A$'+Responsable.length],
-            showDropDown: true
+          type: 'list',
+          allowBlank: false,
+          showDropDown: true,
+          formulae: [`"${data_array[0].H.join(',')}"`],
         };
-
-
 
         const validationCell_Estado = ws.getCell('I'+`"${i}"`);
         validationCell_Estado.dataValidation = {
@@ -1178,7 +1115,6 @@ export default {
       console.log(payload.restrictions)
     },
     openModal: function (param) {
-      // console.log(param)
       if (typeof param !== "string") {
         if (param.param != "duplicateRow") {
           this.frontId =
@@ -1187,20 +1123,14 @@ export default {
             typeof param.phaseId !== "undefined" ? param.phaseId : "";
           this.exercise =
             typeof param.exercise !== "undefined" ? param.exercise : "";
-
           param = param.param;
-          if ((param == 'enviarNoti')){
-
+          if (param == 'enviarNoti') {
             this.modalName = this.countNotNoti > '0' ?  param : '';
-
-          }else{
-
+          } else if (param == 'calendarDg') {
+            this.modalName = this.countNotNoti > '0' ?  param : '';
+          } else {
             this.modalName = param
-
           }
-
-
-
         } else {
           this.duplicateRow(param);
         }
@@ -2247,17 +2177,7 @@ export default {
             let diferenciaDias = Math.round((dayFechaRequerida - fechaLevantamiento) / (1000 * 60 * 60 * 24));
             totalDias += diferenciaDias;
             contador++;
-          // }else{
 
-          //   if (item.dayFechaLevantamiento && item.dayFechaIdentificacion && item.codAreaRestriccion == this.areaUsuario && !(this.rolProyecto == 3 || this.rolProyecto == 0) ) {
-
-          //     let fechaLevantamiento = new Date(item.dayFechaLevantamiento);
-          //     let fechaIdentificacion = new Date(item.dayFechaIdentificacion);
-          //     let diferenciaDias = Math.round((fechaLevantamiento - fechaIdentificacion) / (1000 * 60 * 60 * 24));
-          //     totalDias += diferenciaDias;
-          //     contador++;
-
-          //   }
           }
         });
       });
